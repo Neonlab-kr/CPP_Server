@@ -4,42 +4,60 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
-#include "AccountManager.h"
-#include "UserManager.h"
 
-void Func1()
+class SpinLock
 {
-	for (int32 i = 0; i < 1000; i++)
+public:
+	void lock()
 	{
-		UserManager::Instance()->ProcessSave();
- 	}
-}
+		//CAS (Compare-And-Swap)
+		bool expected = false;
+		bool desired = true;
 
-void Func2()
-{
-	for (int32 i = 0; i < 1000; i++)
+		while (_locked.compare_exchange_strong(expected, desired) == false)
+		{
+			expected = false;
+		}
+	}
+
+	void unlock()
 	{
-		AccountManager::Instance()->ProcessLogin();
+		_locked.store(false);
+	}
+
+private:
+	atomic<bool> _locked = false;
+};
+
+int32 sum = 0;
+mutex m;
+SpinLock spinLock;
+
+void Add()
+{
+	for (int32 i = 0; i < 10'0000; i++)
+	{
+		lock_guard<SpinLock> guard(spinLock);
+		sum++;
 	}
 }
 
+void Sub()
+{
+	for (int32 i = 0; i < 10'0000; i++)
+	{
+		lock_guard<SpinLock> guard(spinLock);
+		sum--;
+	}
+}
 
 int main()
 {
-	std::thread t1(Func1);
-	std::thread t2(Func2);
+	thread t1(Add);
+	thread t2(Sub);
 
 	t1.join();
 	t2.join();
 
-	cout << "Jobs Done" << endl;
-
-	//참고
-	mutex m1;
-	mutex m2;
-	std::lock(m1, m2);//m1.lock(); m2.lock();
-
-	//adopt_lock : 이미 lock된 상태니까, 나중에 소멸될때 풀어주기만 해
-	lock_guard<mutex> g1(m1, std::adopt_lock);
-	lock_guard<mutex> g1(m2, std::adopt_lock);
+	cout << sum << endl;
 }
