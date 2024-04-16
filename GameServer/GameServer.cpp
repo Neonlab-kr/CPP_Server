@@ -6,53 +6,53 @@
 #include <windows.h>
 #include <future>
 
-// 가시성, 코드 재배치
-int32 x = 0;
-int32 y = 0;
-int32 r1 = 0;
-int32 r2 = 0;
+atomic<bool> ready;
+int32 value;
 
-volatile bool ready;
-
-void Thread_1()
+void Producer()
 {
-	while (!ready)
-		;
+	value = 0;
 
-	y = 1; // Store y
-	r1 = x; // Load x
+	ready.store(true);
 }
 
-void Thread_2()
+void Consumer()
 {
-	while (!ready)
+	while (ready.load()==false)
 		;
 
-	x = 1; // Store x
-	r2 = y; // Load y
+	cout << value << endl;
 }
 
 int main()
 {
-	int32 count = 0;
+	ready = false;
+	value = 0;
+	thread t1(Producer);
+	thread t2(Consumer);
+	t1.join();
+	t2.join();
 
-	while (true)
-	{
-		ready = false;
-		count++;
+	//Memory Model (정책)
+	// 1) Sequentially Consistent (seq_cst)
+	// 2) Acquire-Release (consume, acquire, release, acq_rel)
+	// 3) Released (relaxed)
 
-		x = y = r1 = r2 = 0;
+	// 1) seq_cst (가장 엄격 = 컴파일러 최적화 여지 적음 = 직관적)
+	// 가시성 문제 바로 해결, 코드 재배치 바로 해결
+	
+	// 2) acquire-release
+	// 딱 중간
+	// release 명령 이전의 메모리 명령들이, 해당 명령 이후로 재배치 되는것을 막아줌.
+	// 그리고 acquire로 같은 변수를 읽는 스레드가 있다면
+	// release 이전의 명령들이 -> acquire 하는 순간에 관찰 가능(가시성 보장)
+	
+	// 3) relaxed (자유롭다 = 컴파일러 최적화 여지 많음 = 직관적이지 않음)
+	// 너무나도 자유롭다!
+	// 코드 재배치도 멋대로 가능! 가시성 해결 NO
+	// 가장 기본 조건 (동일 객체에 대한 동일 관찰 순서)
 
-		thread t1(Thread_1);
-		thread t2(Thread_2);
-
-		ready = true;
-
-		t1.join();
-		t2.join();
-
-		if (r1 == 0 && r2 == 0)
-			break;
-	}
-	cout << count << " 번만에 빠져나옴~" << endl;
+	// 인텔, AMD의 경우 애당초 순차적 일관성을 보장함.
+	// seq_cst를 써도 별다른 부하가 없음
+	// ARM의 경우 꽤 차이가 있음.
 }
