@@ -13,6 +13,18 @@
 
 #pragma endregion
 
+#pragma region Memory
+
+#ifdef _DEBUG
+#define Xalloc(size)	StompAllocator::Alloc(size)
+#define Xrelease(ptr)	StompAllocator::Release(ptr)
+#else
+#define xalloc(size)	BaseAllocator::Alloc(size)
+#define xrelease(ptr)	BaseAllocator::Release(ptr)
+#endif
+
+#pragma endregion
+
 #pragma region Crash
 
 #define CRASH(cause)						\

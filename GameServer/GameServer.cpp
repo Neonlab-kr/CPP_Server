@@ -8,60 +8,45 @@
 #include <future>
 #include "ThreadManager.h"
 
-// 소수 구하기
-bool isPrime(int32 number)
-{
-	if (number <= 1)
-		return false;
-	if (number == 2 || number == 3)
-		return true;
+#include "RefCounting.h"
+#include "Memory.h"
 
-	for (int32 i = 2; i < number; i++)
+class Player
+{
+public:
+	Player() {}
+	virtual ~Player() {}
+};
+
+class Knight : public Player
+{
+public:
+	Knight()
 	{
-		if ((number % i) == 0)
-			return false;
+		cout << "Knight()" << endl;
 	}
 
-	return true;
-}
-
-//[start - end]
-int32 CountPrime(int32 start, int32 end)
-{
-	int32 count = 0;
-
-	for (int32 number = start; number < end; number++)
+	~Knight()
 	{
-		if (isPrime(number))
-			count++;
+		cout << "~Knight()" << endl;
 	}
 
-	return count;
-}
+	Knight(int32 hp) : _hp(hp)
+	{
+		cout << "Knight(hp)" << endl;
+	}
 
-// 1과 자기 자신으로만 나뉘는 숫자가 소수
+	int32 _hp = 100;
+	int32 _mp = 10;
+};
 
 int main()
 {
-	const int32 MAX_NUMBER = 100'0000;
 
-	int32 coreCount = thread::hardware_concurrency();
-	int32 jobCount = (MAX_NUMBER / coreCount) + 1;
+	Knight* knight = (Knight*)xnew<Player>();
 
-	Atomic<int32> primeCount = 0;
+	knight->_hp = 100;
 
-	for (int32 i = 0; i < coreCount; i++)
-	{
-		int32 start = (i * jobCount) + 1;
-		int32 end = min(MAX_NUMBER, (i + 1) * jobCount);
+	xdelete(knight);
 
-		GThreadManager->Launch([start, end, &primeCount]()
-			{
-				primeCount += CountPrime(start, end);
-			});
-	}
-
-	GThreadManager->Join();
-
-	cout << primeCount << endl;
 }
