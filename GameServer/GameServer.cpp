@@ -10,6 +10,7 @@
 
 #include "RefCounting.h"
 #include "Memory.h"
+#include "Allocator.h"
 
 class Player
 {
@@ -42,11 +43,21 @@ public:
 
 int main()
 {
+	for (int32 i = 0; i < 5; i++)
+	{
+		GThreadManager->Launch([]()
+			{
+				while (true)
+				{
+					Vector<Knight> v(10);
 
-	Knight* knight = (Knight*)xnew<Player>();
+					Map<int32, Knight> m;
+					m[100] = Knight();
 
-	knight->_hp = 100;
+					this_thread::sleep_for(10ms);
+				}
+			});
+	}
 
-	xdelete(knight);
-
+	GThreadManager->Join();
 }
