@@ -1,11 +1,17 @@
 #pragma once
 
+enum
+{
+	SLIST_ALIGNMENT = 16
+};
+
 #pragma region MemoryHeader
 
-struct MemoryHeader
+DECLSPEC_ALIGN(SLIST_ALIGNMENT)
+struct MemoryHeader : public SLIST_ENTRY
 {
-	// [Memoryheader][Data]
-	MemoryHeader(int32 size) : allocSize(size) {}
+	// [MemoryHeader][Data]
+	MemoryHeader(int32 size) : allocSize(size) { }
 
 	static void* AttachHeader(MemoryHeader* header, int32 size)
 	{
@@ -20,12 +26,14 @@ struct MemoryHeader
 	}
 
 	int32 allocSize;
+	// TODO : 필요한 추가 정보
 };
 
 #pragma endregion
 
 #pragma region MemoryPool
 
+DECLSPEC_ALIGN(SLIST_ALIGNMENT)
 class MemoryPool
 {
 public:
@@ -36,11 +44,10 @@ public:
 	MemoryHeader*	Pop();
 
 private:
-	int32 _allocSize = 0;
-	atomic<int32> _allocCount = 0;
-
-	USE_LOCK;
-	queue<MemoryHeader*> _queue;
+	SLIST_HEADER	_header;
+	int32			_allocSize = 0;
+	atomic<int32>	_useCount = 0;
+	atomic<int32>	_reserveCount = 0;
 };
 
 #pragma endregion
