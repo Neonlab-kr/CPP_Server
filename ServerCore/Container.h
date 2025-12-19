@@ -1,6 +1,7 @@
 #pragma once
 #include "Types.h"
 #include "Allocator.h"
+#include <array>
 #include <vector>
 #include <list>
 #include <queue>
@@ -11,17 +12,20 @@
 #include <unordered_set>
 using namespace std;
 
-template <typename Type>
+template<typename Type, uint32 Size>
+using Array = array<Type, Size>;
+
+template<typename Type>
 using Vector = vector<Type, StlAllocator<Type>>;
 
-template <typename Type>
+template<typename Type>
 using List = list<Type, StlAllocator<Type>>;
 
-template <typename Key, typename Type, typename Pred = less<Key>>
+template<typename Key, typename Type, typename Pred = less<Key>>
 using Map = map<Key, Type, Pred, StlAllocator<pair<const Key, Type>>>;
 
-template <typename Key, typename Pred = less<Key>>
-using Set = set<Key, Pred, StlAllocator<const Key>>;
+template<typename Key, typename Pred = less<Key>>
+using Set = set<Key, Pred, StlAllocator<Key>>;
 
 template<typename Type>
 using Deque = deque<Type, StlAllocator<Type>>;
@@ -39,8 +43,8 @@ using String = basic_string<char, char_traits<char>, StlAllocator<char>>;
 
 using WString = basic_string<wchar_t, char_traits<wchar_t>, StlAllocator<wchar_t>>;
 
-template <typename Key, typename Type, typename Hasher = hash<Key>, typename KeyEq = equal_to<Key>>
+template<typename Key, typename Type, typename Hasher = hash<Key>, typename KeyEq = equal_to<Key>>
 using HashMap = unordered_map<Key, Type, Hasher, KeyEq, StlAllocator<pair<const Key, Type>>>;
 
-template <typename Key, typename Hasher = hash<Key>, typename KeyEq = equal_to<Key>>
-using HashSet = unordered_set<Key, Hasher, KeyEq, StlAllocator<const Key>>;
+template<typename Key, typename Hasher = hash<Key>, typename KeyEq = equal_to<Key>>
+using HashSet = unordered_set<Key, Hasher, KeyEq, StlAllocator<Key>>;

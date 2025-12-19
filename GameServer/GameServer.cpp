@@ -2,29 +2,11 @@
 #include "ThreadManager.h"
 #include "Service.h"
 #include "Session.h"
-
-
-class GameSession : public Session
-{
-public:
-	~GameSession()
-	{
-		cout << "~GameSession" << endl;
-	}
-
-	virtual int32 OnRecv(BYTE* buffer, int32 len) override
-	{
-		// Echo
-		cout << "OnRecv Len = " << len << endl;
-		Send(buffer, len);
-		return len;
-	}
-
-	virtual void OnSend(int32 len) override
-	{
-		cout << "OnSend Len = " << len << endl;
-	}
-};
+#include "GameSession.h"
+#include "GameSessionManager.h"
+#include "BufferWriter.h"
+#include "ServerPacketHandler.h"
+#include <tchar.h>
 
 int main()
 {
@@ -45,6 +27,17 @@ int main()
 					service->GetIocpCore()->Dispatch();
 				}
 			});
+	}
+
+	WCHAR sendData3[1000] = L"가"; // UTF16 = Unicode (한글/로마 2바이트)
+
+	while (true)
+	{
+		vector<BuffData> buffs{ BuffData {100, 1.5f}, BuffData{200, 2.3f}, BuffData {300, 0.7f } };
+		SendBufferRef sendBuffer = ServerPacketHandler::Make_S_TEST(1001, 100, 10, buffs, L"안녕하세요");
+		GSessionManager.Broadcast(sendBuffer);
+
+		this_thread::sleep_for(250ms);
 	}
 
 	GThreadManager->Join();
