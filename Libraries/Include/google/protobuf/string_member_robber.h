@@ -28,25 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/field_access_listener.h>
+#ifndef GOOGLE_PROTOBUF_STRING_MEMBER_ROBBER_H__
+#define GOOGLE_PROTOBUF_STRING_MEMBER_ROBBER_H__
 
-#include <google/protobuf/stubs/once.h>
+#include <string>
+#include <type_traits>
 
-namespace google {
-namespace protobuf {
 
-internal::once_flag FieldAccessListener::register_once_ = {};
-FieldAccessListener* FieldAccessListener::field_listener_ = nullptr;
-
-FieldAccessListener* FieldAccessListener::GetListener() {
-  return field_listener_;
-}
-
-void FieldAccessListener::RegisterListener(FieldAccessListener* listener) {
-  // TODO(danilak): Add a GOOGLE_DCHECK for message_injector_ to be nullptr and update
-  // tests.
-  internal::call_once(register_once_, [&] { field_listener_ = listener; });
-}
-
-}  // namespace protobuf
-}  // namespace google
+#endif  // GOOGLE_PROTOBUF_STRING_MEMBER_ROBBER_H__

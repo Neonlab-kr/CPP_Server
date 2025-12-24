@@ -20,6 +20,15 @@ void Service::CloseService()
 	// TODO
 }
 
+void Service::Broadcast(SendBufferRef sendBuffer)
+{
+	WRITE_LOCK;
+	for (const auto& session : _sessions)
+	{
+		session->Send(sendBuffer);
+	}
+}
+
 SessionRef Service::CreateSession()
 {
 	SessionRef session = _sessionFactory();
@@ -70,10 +79,6 @@ bool ClientService::Start()
 	return true;
 }
 
-#pragma endregion 
-
-#pragma region ServerService
-
 ServerService::ServerService(NetAddress address, IocpCoreRef core, SessionFactory factory, int32 maxSessionCount)
 	: Service(ServiceType::Server, address, core, factory, maxSessionCount)
 {
@@ -101,6 +106,5 @@ void ServerService::CloseService()
 
 	Service::CloseService();
 }
-
 
 #pragma endregion 

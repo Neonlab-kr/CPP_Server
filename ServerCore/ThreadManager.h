@@ -10,15 +10,16 @@ public:
 	ThreadManager();
 	~ThreadManager();
 
-	void Launch(function<void(void)> callback);
-	void Join();
+	void	Launch(function<void(void)> callback);
+	void	Join();
 
-	static void initTLS();
+	static void InitTLS();
 	static void DestroyTLS();
 
+	static void DoGlobalQueueWork();
+	static void DistributeReservedJobs();
+
 private:
-	Mutex _lock;
-	vector<thread> _threads;
-
+	Mutex			_lock;
+	vector<thread>	_threads;
 };
-

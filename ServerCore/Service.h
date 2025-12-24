@@ -26,6 +26,7 @@ public:
 	virtual void		CloseService();
 	void				SetSessionFactory(SessionFactory func) { _sessionFactory = func; }
 
+	void				Broadcast(SendBufferRef sendBuffer);
 	SessionRef			CreateSession();
 	void				AddSession(SessionRef session);
 	void				ReleaseSession(SessionRef session);
@@ -35,7 +36,7 @@ public:
 public:
 	ServiceType			GetServiceType() { return _type; }
 	NetAddress			GetNetAddress() { return _netAddress; }
-	IocpCoreRef&		GetIocpCore() { return _iocpCore; }
+	IocpCoreRef& GetIocpCore() { return _iocpCore; }
 
 protected:
 	USE_LOCK;
@@ -61,7 +62,6 @@ public:
 
 	virtual bool	Start() override;
 };
-
 
 #pragma endregion 
 
